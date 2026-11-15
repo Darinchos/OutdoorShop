@@ -1,0 +1,21 @@
+@model OutdoorShop.Controllers.AdminDashboardViewModel
+@using OutdoorShop.Models
+@{
+    ViewData["Title"] = "Административно табло";
+}
+<section class="admin-dashboard">
+    <header class="page-heading"><div><span class="eyebrow">OUTDOORSHOP ADMIN</span><h1>Табло</h1><p>Кратък преглед на магазина.</p></div></header>
+    <div class="dashboard-stats">
+        <article class="dashboard-stat"><span>Продукти</span><strong>@Model.ProductCount</strong><a asp-controller="Products" asp-action="Index">Управление →</a></article>
+        <article class="dashboard-stat"><span>Клиенти</span><strong>@Model.CustomerCount</strong></article>
+        <article class="dashboard-stat"><span>Поръчки</span><strong>@Model.OrderCount</strong><a asp-controller="Orders" asp-action="Index">Всички поръчки →</a></article>
+        <article class="dashboard-stat"><span>Нови поръчки</span><strong>@Model.PendingOrderCount</strong></article>
+        <article class="dashboard-stat"><span>Оборот този месец</span><strong>@Model.MonthlyRevenue.ToString("0.00") <small>лв.</small></strong></article>
+    </div>
+    <section class="dashboard-recent card"><div class="card-body"><div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h4 mb-0">Последни поръчки</h2><a asp-controller="Orders" asp-action="Index">Всички →</a></div>
+        @if (Model.RecentOrders.Count == 0) { <p class="text-muted mb-0">Все още няма поръчки.</p> }
+        else { <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Номер</th><th>Клиент</th><th>Статус</th><th>Дата</th><th>Сума</th></tr></thead><tbody>
+        @foreach (var order in Model.RecentOrders) { <tr><td><a asp-controller="Orders" asp-action="Details" asp-route-id="@order.Id">#@order.Id</a></td><td>@order.CustomerName</td><td>@OrderStatuses.BulgarianLabel(order.Status)</td><td>@order.CreatedAt.ToString("dd.MM.yyyy")</td><td>@order.TotalPrice.ToString("0.00") лв.</td></tr> }
+        </tbody></table></div> }
+    </div></section>
+</section>

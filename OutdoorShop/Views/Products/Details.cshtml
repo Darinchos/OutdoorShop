@@ -1,0 +1,56 @@
+@model OutdoorShop.Models.Product
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<section class="product-detail-page">
+    <a asp-action="Index" asp-route-categoryId="@Model.CategoryId" class="back-link">← Обратно към продуктите</a>
+    <div class="product-detail-card">
+        <div class="product-detail-image-wrap">
+            <img src="@(string.IsNullOrWhiteSpace(Model.ImageUrl) ? "/images/product-placeholder.svg" : Model.ImageUrl)" alt="@Model.Name" class="product-detail-image" fetchpriority="high" decoding="async" onerror="this.onerror=null;this.src='/images/product-placeholder.svg';" />
+            @if (Model.Stock <= 0) { <span class="stock-badge out">Изчерпан</span> }
+        </div>
+        <div class="product-detail-info">
+            @if (Model.Category != null)
+            {
+                <a asp-controller="Products" asp-action="Index" asp-route-categoryId="@Model.CategoryId" class="product-category">@Model.Category.Name</a>
+            }
+            <h1>@Model.Name</h1>
+            <div class="detail-price">@Model.Price.ToString("0.00") <span>лв.</span></div>
+            <div class="detail-divider"></div>
+            <h2>Описание</h2>
+            <p class="detail-description">@(string.IsNullOrWhiteSpace(Model.Description) ? "Няма добавено описание за този продукт." : Model.Description)</p>
+            <div class="detail-stock @(Model.Stock > 0 ? "available" : "unavailable")"><span class="stock-dot"></span>@(Model.Stock > 0 ? $"В наличност · {Model.Stock} бр." : "Временно няма наличност")</div>
+            @if (Model.Stock > 0)
+            {
+                <form asp-controller="Cart" asp-action="Add" method="post" class="detail-purchase">
+                    <input type="hidden" name="productId" value="@Model.Id" />
+                    <label for="quantity" class="form-label">Количество</label>
+                    <div class="quantity-control"><button type="button" class="quantity-step" data-quantity-step="-1" aria-label="Намали количеството">−</button><input id="quantity" name="quantity" type="number" min="1" max="@Model.Stock" value="1" class="form-control" inputmode="numeric" /><button type="button" class="quantity-step" data-quantity-step="1" aria-label="Увеличи количеството">+</button></div>
+                    <button type="submit" class="btn btn-success btn-lg">Добави в количката <span aria-hidden="true">→</span></button>
+                </form>
+            }
+            <p class="detail-footnote">Поръчката може да бъде завършена и като гост.</p>
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="admin-actions detail-admin-actions">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Редактирай продукта</a>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">Изтрий</a>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@if (ViewBag.RelatedProducts is IEnumerable<OutdoorShop.Models.Product> relatedProducts && relatedProducts.Any())
+{
+    <section class="related-products">
+        <div class="section-heading"><div><span class="eyebrow">ОТ СЪЩАТА КОЛЕКЦИЯ</span><h2>Може да ти хареса</h2></div><a asp-controller="Products" asp-action="Index" asp-route-categoryId="@Model.CategoryId" class="text-link">Цялата колекция ↗</a></div>
+        <div class="product-grid related-product-grid">
+            @foreach (var product in relatedProducts)
+            {
+                <article class="product-card"><a asp-action="Details" asp-route-id="@product.Id" class="product-image-container"><img src="@(string.IsNullOrWhiteSpace(product.ImageUrl) ? "/images/product-placeholder.svg" : product.ImageUrl)" class="product-image" alt="@product.Name" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/product-placeholder.svg';" /></a><div class="product-content"><span class="product-category">@product.Category?.Name</span><h2><a asp-action="Details" asp-route-id="@product.Id">@product.Name</a></h2><div class="product-bottom"><span class="product-price">@product.Price.ToString("0.00") <small>лв.</small></span></div></div></article>
+            }
+        </div>
+    </section>
+}

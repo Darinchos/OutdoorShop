@@ -1,0 +1,181 @@
+﻿@model OutdoorShop.Models.Order
+
+@{
+    ViewData["Title"] = "Завършване на поръчката";
+}
+
+<div class="checkout-page">
+
+    <div class="checkout-header">
+
+        <span class="hero-badge">OUTDOORSHOP</span>
+
+        <h1>📦 Завърши поръчката</h1>
+
+        <p>
+            Въведи данните си, за да завършиш покупката.
+        </p>
+
+    </div>
+
+
+    <div class="checkout-container">
+
+        <div class="checkout-form-card">
+
+            <h2>👤 Данни за доставка</h2>
+
+            <form asp-action="Checkout" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="form-group">
+
+                    <label asp-for="CustomerName">
+                        Име
+                    </label>
+
+                    <input asp-for="CustomerName" autocomplete="name"
+                           class="form-control"
+                           placeholder="Твоето име" />
+
+                    <span asp-validation-for="CustomerName"
+                          class="text-danger"></span>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label asp-for="Email">
+                        Имейл
+                    </label>
+
+                    <input asp-for="Email" autocomplete="email"
+                           type="email"
+                           class="form-control"
+                           placeholder="example@email.com" />
+
+                    <span asp-validation-for="Email"
+                          class="text-danger"></span>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label asp-for="Phone">
+                        Телефон
+                    </label>
+
+                    <input asp-for="Phone" autocomplete="tel"
+                           class="form-control"
+                           placeholder="0888 123 456" />
+
+                    <span asp-validation-for="Phone"
+                          class="text-danger"></span>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label asp-for="Address">
+                        Адрес за доставка
+                    </label>
+
+                    <textarea asp-for="Address" autocomplete="street-address"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Град, улица, номер..."></textarea>
+
+                    <span asp-validation-for="Address"
+                          class="text-danger"></span>
+
+                </div>
+
+
+                <button type="submit" data-loading-label="Обработка на поръчката…"
+                        class="btn btn-success checkout-submit">
+                    🔒 Потвърди поръчката
+                </button>
+
+                <a asp-controller="Cart"
+                   asp-action="Index"
+                   class="checkout-back">
+                    ← Назад към количката
+                </a>
+
+            </form>
+
+        </div>
+
+
+        <aside class="checkout-info">
+
+            <section class="checkout-order-summary">
+                <h2>Твоята поръчка</h2>
+                @if (ViewBag.CheckoutSummary is IEnumerable<OutdoorShop.ViewModels.CheckoutSummaryLine> summary && summary.Any())
+                {
+                    <ul class="checkout-summary-list">
+                    @foreach (var line in summary)
+                    {
+                        <li><span><strong>@line.Name</strong><small>@line.Quantity × @line.UnitPrice.ToString("0.00") лв.</small></span><strong>@line.Total.ToString("0.00") лв.</strong></li>
+                    }
+                    </ul>
+                    <div class="checkout-summary-total"><span>Общо</span><strong>@summary.Sum(line => line.Total).ToString("0.00") лв.</strong></div>
+                    @if (summary.Any(line => line.Quantity > line.Stock))
+                    {
+                        <p class="checkout-stock-warning" role="status">Наличността ще бъде проверена повторно при потвърждение.</p>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted mb-0">Количката ти е празна или продуктите вече не са налични.</p>
+                    <a asp-controller="Cart" asp-action="Index" class="btn btn-outline-success w-100 mt-3">Към количката</a>
+                }
+            </section>
+
+            <div class="checkout-info-card">
+
+                <div class="checkout-info-icon">
+                    🏕️
+                </div>
+
+                <h3>
+                    Готов за приключение?
+                </h3>
+
+                <p>
+                    След потвърждаване на поръчката
+                    ще обработим данните ти и ще се свържем
+                    с теб за доставката.
+                </p>
+
+                <div class="checkout-feature">
+                    ✓ Сигурна поръчка
+                </div>
+
+                <div class="checkout-feature">
+                    ✓ Бърза обработка
+                </div>
+
+                <div class="checkout-feature">
+                    ✓ Outdoor екипировка
+                </div>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Account" asp-action="Profile" class="checkout-back">Данните се зареждат от профила ти и могат да бъдат редактирани тук.</a>
+                }
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,13 @@
+﻿@model ErrorViewModel
+@{
+    ViewData["Title"] = "Възникна грешка";
+}
+
+<section class="error-page">
+<div class="account-card text-center error-card">
+    <span class="eyebrow">НЕЩО СЕ ОБЪРКА</span>
+    <h1>Не успяхме да заредим страницата</h1>
+    <p class="auth-intro">Опитай отново след малко или се върни към началната страница.</p>
+    @if (Model.ShowRequestId) { <p class="small text-muted">Код за заявката: <code>@Model.RequestId</code></p> }
+    <a asp-controller="Home" asp-action="Index" class="btn btn-success">Към началото</a>
+</div></section>

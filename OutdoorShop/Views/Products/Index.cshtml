@@ -1,0 +1,100 @@
+@model IEnumerable<OutdoorShop.Models.Product>
+@{
+    ViewData["Title"] = "Продукти";
+}
+
+<section class="catalog-page">
+    <header class="page-heading products-header">
+        <div><span class="eyebrow">ЕКИПИРОВКА ЗА ПРИКЛЮЧЕНИЯ</span><h1>Продукти</h1><p>Подготви се за времето навън и за маршрута, който си избрал.</p></div>
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-action="Create" class="btn btn-success">＋ Добави продукт</a>
+        }
+    </header>
+
+    <form asp-action="Index" method="get" class="filter-bar">
+        <label for="categoryId">Категория</label>
+        <select id="categoryId" name="categoryId" class="form-select">
+            <option value="">Всички категории</option>
+            @foreach (var category in (IEnumerable<OutdoorShop.Models.Category>)ViewBag.Categories)
+            {
+                if ((int?)ViewBag.SelectedCategoryId == category.Id)
+                {
+                    <option value="@category.Id" selected>@category.Name</option>
+                }
+                else
+                {
+                    <option value="@category.Id">@category.Name</option>
+                }
+            }
+        </select>
+        <label class="visually-hidden" for="search">Търси продукти</label>
+        <input id="search" name="search" value="@ViewBag.Search" class="form-control catalog-search" placeholder="Търси продукт..." />
+        <label class="visually-hidden" for="sort">Подреди продуктите</label>
+        <select id="sort" name="sort" class="form-select catalog-sort">
+            <option value="">По име</option>
+            <option value="price_asc" selected="@(ViewBag.Sort == "price_asc")">Цена: ниска към висока</option>
+            <option value="price_desc" selected="@(ViewBag.Sort == "price_desc")">Цена: висока към ниска</option>
+            <option value="name_desc" selected="@(ViewBag.Sort == "name_desc")">Име: Я към А</option>
+            <option value="stock" selected="@(ViewBag.Sort == "stock")">Наличност</option>
+        </select>
+        <button type="submit" class="btn btn-outline-success">Покажи</button>
+        @if (ViewBag.SelectedCategoryId != null || !string.IsNullOrWhiteSpace((string?)ViewBag.Search) || !string.IsNullOrWhiteSpace((string?)ViewBag.Sort))
+        {
+            <a asp-action="Index" class="filter-reset">Изчисти филтъра</a>
+        }
+    </form>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state"><span class="empty-icon" aria-hidden="true">⌕</span><h2>Няма намерени продукти</h2><p>Избери друга категория или разгледай целия каталог.</p><a asp-action="Index" class="btn btn-outline-success">Покажи всички продукти</a></div>
+    }
+    else
+    {
+        <div class="catalog-count">@Model.Count() продукта</div>
+        <div class="product-grid">
+            @foreach (var product in Model)
+            {
+                <article class="product-card">
+                    <a asp-action="Details" asp-route-id="@product.Id" class="product-image-container" aria-label="Детайли за @product.Name">
+                        <img src="@(string.IsNullOrWhiteSpace(product.ImageUrl) ? "/images/product-placeholder.svg" : product.ImageUrl)" class="product-image" alt="@product.Name" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/product-placeholder.svg';" />
+                        @if (product.Stock <= 0)
+                        {
+                            <span class="stock-badge out">Изчерпан</span>
+                        }
+                        else if (product.Stock <= 5)
+                        {
+                            <span class="stock-badge low">Последни @product.Stock</span>
+                        }
+                        else
+                        {
+                            <span class="stock-badge">В наличност</span>
+                        }
+                    </a>
+                    <div class="product-content">
+                        @if (product.Category != null) { <span class="product-category">@product.Category.Name</span> }
+                        <h2><a asp-action="Details" asp-route-id="@product.Id">@product.Name</a></h2>
+                        <p class="product-description">@product.Description</p>
+                        <div class="product-bottom"><span class="product-price">@product.Price.ToString("0.00") <small>лв.</small></span></div>
+                        @if (product.Stock > 0)
+                        {
+                            <form asp-controller="Cart" asp-action="Add" method="post" class="product-actions">
+                                <input type="hidden" name="productId" value="@product.Id" />
+                                <input type="hidden" name="quantity" value="1" />
+                                <button type="submit" class="btn btn-success w-100">Добави в количката <span aria-hidden="true">→</span></button>
+                            </form>
+                        }
+                        else
+                        {
+                            <button class="btn btn-secondary w-100" disabled>Временно изчерпан</button>
+                        }
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <div class="admin-actions"><a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-sm btn-outline-secondary">Редактирай</a><a asp-action="Delete" asp-route-id="@product.Id" class="btn btn-sm btn-outline-danger">Изтрий</a></div>
+                        }
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>

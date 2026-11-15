@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#17372d" />
+    <title>@ViewData["Title"] · OutdoorShop</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="@(ViewData["FullBleed"] as bool? == true ? "home-body" : "")">
+    @{
+        var navCartCount = 0;
+        try
+        {
+            var savedCart = Context.Session.GetString("Cart");
+            if (!string.IsNullOrWhiteSpace(savedCart))
+            {
+                navCartCount = (System.Text.Json.JsonSerializer.Deserialize<List<OutdoorShop.Models.CartItem>>(savedCart) ?? new List<OutdoorShop.Models.CartItem>()).Sum(item => item.Quantity);
+            }
+        }
+        catch (System.Text.Json.JsonException) { navCartCount = 0; }
+    }
+    <header class="site-header @(ViewData["FullBleed"] as bool? == true ? "site-header-home" : "")">
+        <nav class="navbar navbar-expand-lg" aria-label="Основна навигация">
+            <div class="container">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index" aria-label="OutdoorShop – Начало">
+                    <span class="brand-mark" aria-hidden="true">O</span>
+                    <span>OUTDOOR<span class="brand-light">SHOP</span><small>НАВЪН Е ПО-ДОБРЕ</small></span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Отвори менюто">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav mx-auto">
+                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Начало</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Products" asp-action="Index">Продукти</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Categories" asp-action="Index">Категории</a></li>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Index">Табло</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Orders" asp-action="Index">Поръчки</a></li>
+                        }
+                    </ul>
+                    <div class="navbar-actions">
+                        <a asp-controller="Products" asp-action="Index" class="nav-icon-link" aria-label="Търси продукти" title="Търси"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></a>
+                        <a asp-controller="Cart" asp-action="Index" class="cart-button"><svg class="cart-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.1 11.1a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 1.9-1.5L21 8H6"></path><circle cx="9.5" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg><span>Количка</span><span class="cart-count" aria-label="@navCartCount артикула">@navCartCount</span></a>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a asp-controller="Account" asp-action="Profile" class="user-greeting">Моят профил</a>
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                <button type="submit" class="account-link">Изход</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="Login" class="account-link">Вход</a>
+                            <a asp-controller="Account" asp-action="Register" class="register-link">Регистрация</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="page-main">
+        @if (ViewData["FullBleed"] as bool? == true)
+        {
+            @RenderBody()
+        }
+        else
+        {
+            <div class="container page-container">@RenderBody()</div>
+        }
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <div class="footer-brand">OUTDOOR<span>SHOP</span></div>
+                    <p>Екипировка за пътеките, планината и свободното време навън.</p>
+                    <span class="footer-contact">Свържи се с нас · hello@outdoorshop.bg</span>
+                </div>
+                <div class="footer-links">
+                    <span class="footer-group-title">РАЗГЛЕДАЙ</span>
+                    <a asp-controller="Products" asp-action="Index">Продукти</a>
+                    <a asp-controller="Categories" asp-action="Index">Категории</a>
+                    <a asp-controller="Cart" asp-action="Index">Количка</a>
+                    <a asp-controller="Home" asp-action="Privacy">Поверителност</a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-controller="Account" asp-action="MyOrders">Моите поръчки</a>
+                    }
+                </div>
+                <div class="footer-links"><span class="footer-group-title">КАТЕГОРИИ</span><a asp-controller="Categories" asp-action="Index">Къмпинг и палатки</a><a asp-controller="Categories" asp-action="Index">Облекло и обувки</a><a asp-controller="Categories" asp-action="Index">Раници и аксесоари</a></div>
+            </div>
+            <div class="footer-bottom"><span>© @DateTime.Now.Year OutdoorShop · Всички права запазени</span><span>Създадено за приключения.</span></div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

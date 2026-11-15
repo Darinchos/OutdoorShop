@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" role="img" aria-labelledby="title desc">
+  <title id="title">Снимката не е налична</title>
+  <desc id="desc">Илюстрация на планина и гора</desc>
+  <rect width="900" height="700" fill="#edf1ed"/>
+  <circle cx="700" cy="150" r="65" fill="#d9e4d9"/>
+  <path d="M0 500 220 250l160 180 190-250 330 320v200H0z" fill="#b8c9bb"/>
+  <path d="m250 500 320-320 330 320v200H250z" fill="#8ba591"/>
+  <path d="m520 180 105 130-65-15-40 28-40-28-65 15z" fill="#f7f8f5"/>
+  <path d="M0 530q190-90 390 0t510-5v175H0z" fill="#527861"/>
+  <g fill="#315b43"><path d="m100 590 65-145 65 145z"/><path d="m180 590 52-115 52 115z"/><path d="m700 600 75-170 75 170z"/><path d="m620 600 52-120 52 120z"/></g>
+  <text x="450" y="655" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="24" font-weight="700">Снимката скоро ще бъде налична</text>
+</svg>

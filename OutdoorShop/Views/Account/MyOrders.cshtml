@@ -1,0 +1,11 @@
+@model IEnumerable<OutdoorShop.Models.Order>
+@using OutdoorShop.Models
+@{
+    ViewData["Title"] = "Моите поръчки";
+}
+<section class="catalog-page"><header class="page-heading"><div><span class="eyebrow">МОЯТ АКАУНТ</span><h1>Моите поръчки</h1></div><a asp-action="Profile" class="btn btn-outline-success">Моят профил</a></header>
+    @if (!Model.Any()) { <div class="empty-state"><h2>Все още нямаш поръчки</h2><p>Направените след вход поръчки ще се показват тук.</p><a asp-controller="Products" asp-action="Index" class="btn btn-success">Разгледай продуктите</a></div> }
+    else { <div class="table-responsive orders-card"><table class="table align-middle"><thead><tr><th>Поръчка</th><th>Дата</th><th>Статус</th><th>Продукти</th><th>Сума</th><th></th></tr></thead><tbody>
+    @foreach (var order in Model) { <tr><td>#@order.Id</td><td>@order.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td><td>@OrderStatuses.BulgarianLabel(order.Status)</td><td>@order.Items.Sum(item => item.Quantity)</td><td>@order.TotalPrice.ToString("0.00") лв.</td><td><a asp-action="MyOrder" asp-route-id="@order.Id" class="btn btn-sm btn-outline-success">Детайли</a></td></tr> }
+    </tbody></table></div> }
+</section>

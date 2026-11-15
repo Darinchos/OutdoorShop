@@ -1,0 +1,39 @@
+@model OutdoorShop.ViewModels.HomeViewModel
+@{
+    ViewData["Title"] = "Екипировка за навън";
+    ViewData["FullBleed"] = true;
+}
+
+<section class="hero-section" aria-label="OutdoorShop — приключението започва">
+    <video class="hero-video" autoplay muted loop playsinline preload="metadata" poster="/images/hero-forest.jpg" aria-hidden="true"><source src="/videos/hero.mp4" type="video/mp4" /></video>
+    <div class="hero-shade"></div>
+    <div class="hero-content"><span class="eyebrow eyebrow-light hero-kicker">ОТКРИЙ СВОБОДАТА</span><h1><span>ПРИРОДАТА НЕ</span><br /><span>ПОЗНАВА <em>ГРАНИЦИ.</em></span></h1><p>Подготви се за следващото приключение с оборудване, на което можеш да разчиташ.</p><div class="hero-buttons"><a asp-controller="Products" asp-action="Index" class="btn btn-sand btn-lg">РАЗГЛЕДАЙ КОЛЕКЦИЯТА <span aria-hidden="true">↗</span></a><a href="#story" class="hero-secondary">НАУЧИ ПОВЕЧЕ <span aria-hidden="true">↓</span></a></div></div>
+    <div class="hero-meta"><span>42°41' N · 23°19' E</span><span>НАМЕРИ СВОЯ ХОРИЗОНТ</span></div><a class="scroll-cue" href="#collections" aria-label="Превърти надолу"><span></span>ПРЕВЪРТИ</a>
+</section>
+
+<div class="home-content container">
+    <section class="home-discovery" id="collections"><div class="section-heading"><div><span class="eyebrow">ЗА ВСЯКА ПОСОКА</span><h2>Излез навън.</h2></div><a asp-controller="Categories" asp-action="Index" class="text-link">Всички категории ↗</a></div>
+        <div class="discovery-grid discovery-grid-four">
+            @foreach (var category in Model.DiscoveryCategories)
+            {
+                var key = category.Name == "Палатки" ? "camp" : category.Name == "Дрехи" ? "clothing" : category.Name == "Раници" ? "packs" : "gear";
+                var label = category.Name == "Палатки" ? "Къмпинг" : category.Name == "Дрехи" ? "Облекло" : category.Name;
+                var image = category.Name == "Палатки" ? "tent-family.jpg" : category.Name == "Дрехи" ? "jacket.jpg" : category.Name == "Раници" ? "backpack-day.jpg" : "headlamp.jpg";
+                <a class="category-photo-card category-photo-@key" asp-controller="Products" asp-action="Index" asp-route-categoryId="@category.Id" style="--category-image: url('/images/@image')"><span class="category-index">0@(Model.DiscoveryCategories.ToList().IndexOf(category) + 1)</span><span class="category-photo-label"><small>КОЛЕКЦИЯ</small><strong>@label</strong><span>РАЗГЛЕДАЙ ↗</span></span></a>
+            }
+        </div>
+    </section>
+    @if (Model.FeaturedProducts.Count > 0)
+    {
+        <section class="home-featured"><div class="section-heading"><div><span class="eyebrow">ИЗБОР НА ЕКИПА</span><h2>Тествано навън. Готово за теб.</h2></div><a asp-controller="Products" asp-action="Index" class="text-link">Разгледай каталога ↗</a></div><div class="product-grid home-products">
+            @foreach (var product in Model.FeaturedProducts)
+            {
+                <article class="product-card"><a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" class="product-image-container"><img class="product-image" src="@(string.IsNullOrWhiteSpace(product.ImageUrl) ? "/images/product-placeholder.svg" : product.ImageUrl)" alt="@product.Name" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/product-placeholder.svg';" /><span class="quick-view">РАЗГЛЕДАЙ ↗</span></a><div class="product-content">@if (product.Category != null) { <span class="product-category">@product.Category.Name</span> }<h2><a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id">@product.Name</a></h2><div class="product-bottom"><span class="product-price">@product.Price.ToString("0.00") <small>лв.</small></span></div></div></article>
+            }
+        </div></section>
+    }
+</div>
+
+<section class="brand-story" id="story"><div class="brand-story-image" role="img" aria-label="Планинска пътека сред дивата природа"></div><div class="brand-story-copy"><span class="eyebrow eyebrow-light">ДИВАТА ПРИРОДА Е ПО-БЛИЗО, ОТКОЛКОТО МИСЛИШ</span><h2>НЕ СЛЕДВАЙ<br />ПЪТЕКАТА.<br /><em>СЪЗДАЙ СВОЯ.</em></h2><p>Най-добрите истории започват там, където свършва познатото. Вземи само нужното. Остави място за непознатото.</p><a asp-controller="Products" asp-action="Index" class="hero-secondary">НАМЕРИ СВОЯТА ЕКИПИРОВКА ↗</a></div></section>
+<section class="promo-band"><div class="promo-inner"><span class="eyebrow eyebrow-light">ПО-МАЛКО ШУМ. ПОВЕЧЕ ХОРИЗОНТ.</span><h2>Следващият ти спомен<br />започва с добра подготовка.</h2><a asp-controller="Products" asp-action="Index" class="btn btn-sand">ОТКРИЙ ЕКИПИРОВКАТА ↗</a></div></section>
+<section class="newsletter-section container"><div><span class="eyebrow">ПИСМА ОТВЪН</span><h2>Малко вдъхновение.<br />Голямо бягство.</h2><p>Маршрути, идеи и новини от света на OutdoorShop.</p></div><div class="newsletter-note"><span aria-hidden="true">✳</span><p>Скоро ще споделяме истории от пътеката. Засега следи новите ни колекции и се подготви за следващото излизане.</p><a asp-controller="Products" asp-action="Index" class="text-link">Разгледай екипировката ↗</a></div></section>

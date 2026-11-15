@@ -1,0 +1,63 @@
+﻿@model OutdoorShop.Models.Category
+
+@{
+    ViewData["Title"] = "Добави категория";
+}
+
+<section class="admin-form-page">
+
+    <span class="eyebrow">АДМИНИСТРАТОР · КАТЕГОРИИ</span>
+    <h1>Добави категория</h1>
+
+    <form asp-action="Create" method="post">
+
+        <div class="mb-3">
+
+            <label asp-for="Name" class="form-label">
+                Име на категорията
+            </label>
+
+            <input asp-for="Name"
+                   class="form-control"
+                   placeholder="Например: Палатки" />
+
+            <span asp-validation-for="Name"
+                  class="text-danger"></span>
+
+        </div>
+
+
+        <div class="mb-3">
+
+            <label asp-for="Description" class="form-label">
+                Описание
+            </label>
+
+            <textarea asp-for="Description"
+                      class="form-control"
+                      rows="4"
+                      placeholder="Описание на категорията"></textarea>
+
+            <span asp-validation-for="Description"
+                  class="text-danger"></span>
+
+        </div>
+
+
+        <button type="submit" data-loading-label="Запазване…"
+                class="btn btn-success">
+            ✅ Добави категория
+        </button>
+
+        <a asp-action="Index"
+           class="btn btn-secondary">
+            Отказ
+        </a>
+
+    </form>
+
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

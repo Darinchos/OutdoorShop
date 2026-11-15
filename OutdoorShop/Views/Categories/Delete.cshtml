@@ -1,0 +1,68 @@
+﻿@model OutdoorShop.Models.Category
+
+@{
+    ViewData["Title"] = "Изтриване на категория";
+}
+
+<section class="admin-form-page">
+
+    <span class="eyebrow">АДМИНИСТРАТОР · КАТЕГОРИИ</span>
+    <h1>Изтриване на категория</h1>
+
+    @if (TempData["DeleteError"] is string deleteError)
+    {
+        <div class="alert alert-warning" role="alert">@deleteError</div>
+    }
+
+    <div class="alert alert-danger">
+
+        <strong>Внимание!</strong>
+
+        Сигурен ли си, че искаш да изтриеш тази категория?
+
+        <br />
+
+        Категория с продукти не може да бъде изтрита.
+
+    </div>
+
+
+    <div class="card mb-4">
+
+        <div class="card-body">
+
+            <h3>
+                @Model.Name
+            </h3>
+
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <p>
+                    @Model.Description
+                </p>
+            }
+
+        </div>
+
+    </div>
+
+
+    <form asp-action="Delete"
+          method="post">
+
+        <input type="hidden"
+               asp-for="Id" />
+
+        <button type="submit"
+                class="btn btn-danger">
+            🗑️ Да, изтрий
+        </button>
+
+        <a asp-action="Index"
+           class="btn btn-secondary">
+            Отказ
+        </a>
+
+    </form>
+
+</section>
