@@ -370,3 +370,42 @@ FodyWeavers.xsd
 **/appsettings.Local.json
 **/appsettings.*.Local.json
 *.sql
+
+# Local databases, database exports, and recovery artifacts
+/.outdoorshop-mariadb/
+**/.outdoorshop-mariadb/
+*.sql.*
+*.dump
+*.mysql
+*.ibd
+*.ibdata*
+*.db
+*.sqlite
+*.sqlite3
+ib_logfile*
+aria_log*
+*.MYD
+*.MYI
+*.frm
+**/mysql-data/
+**/mariadb-data/
+**/database-backups/
+**/db-backups/
+
+# Local configuration and secrets
+**/appsettings.*.json
+!**/appsettings.example.json
+**/secrets*.json
+**/*.local.json
+.env.*
+!.env.example
+
+# Temporary and personal files
+*.bak
+*.old
+*.orig
+*.rej
+*.tmp
+*.temp
+Thumbs.db
+.DS_Store

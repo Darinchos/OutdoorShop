@@ -1,156 +1,127 @@
 # OutdoorShop
 
-OutdoorShop е учебен онлайн магазин за туристическа и къмпинг екипировка. Проектът е изграден с ASP.NET Core MVC и Razor, с интерфейс на български език и responsive оформление за телефон, таблет и настолен компютър.
+OutdoorShop is an ASP.NET Core MVC storefront for camping and hiking equipment. It includes a Bulgarian-language, responsive shopping experience backed by MariaDB, with customer accounts, order management, and an admin area.
 
-## Технологии
+## Features
 
-- .NET 9 и C#
-- ASP.NET Core MVC и Razor Views
-- Entity Framework Core 9
-- MariaDB/MySQL чрез Pomelo
-- ASP.NET Core Identity и роли `Customer` / `Admin`
-- Bootstrap, CSS и малко JavaScript
+- Browse products by category, search the catalog, and sort results.
+- View product details, prices, and stock availability.
+- Add items to a session-based cart and check out as a guest or signed-in customer.
+- Save orders transactionally, update stock, and prevent duplicate checkout submissions.
+- Register and manage a customer profile, order history, and order details.
+- Manage products, categories, and order statuses through role-protected admin pages.
+- Seed missing catalog examples and roles without overwriting existing catalog records.
 
-## Функционалности
+## Technologies
 
-- Начална страница с категории и избрани налични продукти.
-- Каталог с търсене по име/описание, филтър по категория и сортиране.
-- Детайли за продукт, наличност и избор на количество.
-- Количка в сесията с контрол на наличностите.
-- Поръчка като гост или влязъл клиент; цените и складовите количества се четат от базата.
-- Запис на поръчката и намаляване на наличността в транзакция. Checkout ключът предотвратява повторно създаване на една и съща поръчка.
-- Клиентски профил, история и детайли на собствените поръчки.
-- Административно табло, управление на продукти и категории и промяна на статус на поръчка.
-- Публичната регистрация създава само клиенти. Административните страници изискват роля `Admin`.
+- C# and .NET 9 / ASP.NET Core MVC
+- Entity Framework Core 9 and EF Core migrations
+- MariaDB or MySQL through Pomelo.EntityFrameworkCore.MySql
+- ASP.NET Core Identity
+- Razor Views, Bootstrap, CSS, and JavaScript
+- xUnit tests
 
-## Изисквания
+## Requirements
 
 - .NET 9 SDK
-- XAMPP с MariaDB 10.4 или съвместима MariaDB/MySQL база
-- Достъп до NuGet при първо възстановяване на пакетите
+- MariaDB 10.4 or a compatible MySQL/MariaDB server
+- Git
+- Internet access for the initial NuGet package restore
 
-## Настройване на MariaDB с XAMPP
+## Installation
 
-1. Стартирай MySQL/MariaDB от XAMPP.
-2. Създай база `outdoorshop` (например през phpMyAdmin или `CREATE DATABASE outdoorshop CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`).
-3. Настрой `ConnectionStrings:DefaultConnection` чрез User Secrets или environment variables. В git няма локална база, пароли или connection string.
-
-PowerShell с User Secrets:
+Clone the repository, restore packages, and build the solution:
 
 ```powershell
-cd .\OutdoorShop
-dotnet user-secrets init --project .\OutdoorShop\OutdoorShop.csproj
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "server=localhost;port=3306;database=outdoorshop;user=root;password=ТВОЯТА_ПАРОЛА" --project .\OutdoorShop\OutdoorShop.csproj
+git clone https://github.com/Darinchos/OutdoorShop.git
+cd OutdoorShop
+dotnet restore .\OutdoorShop.sln
+dotnet build .\OutdoorShop.sln
 ```
 
-Може да се използват и променливите `ConnectionStrings__DefaultConnection`, `AdminSeed__Email` и `AdminSeed__Password`.
+## Database setup
 
-## Миграции и съществуваща база
+Create a local MariaDB database, for example:
 
-Приложението **не прилага миграции автоматично**. Преди промяна на съществуваща база направи резервно копие и провери таблиците и историята на миграциите. Не изтривай база или таблици, за да заобиколиш несъответствие.
+```sql
+CREATE DATABASE outdoorshop CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+```
 
-От корена на хранилището провери миграциите:
+Keep the connection string in ASP.NET Core User Secrets. The project already has a `UserSecretsId`, so there is no need to run `dotnet user-secrets init`:
+
+```powershell
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "server=127.0.0.1;port=3306;database=outdoorshop;user=root;password=YOUR_LOCAL_PASSWORD" --project .\OutdoorShop\OutdoorShop.csproj
+```
+
+Use your local MariaDB username and password. Do not commit credentials, User Secrets, database files, or SQL exports. For local deployments, environment variables such as `ConnectionStrings__DefaultConnection` can also provide configuration.
+
+### Schema and migrations
+
+The application does not apply migrations automatically. Review the current migration history and schema before updating an existing database:
 
 ```powershell
 dotnet ef migrations list --project .\OutdoorShop\OutdoorShop.csproj --startup-project .\OutdoorShop\OutdoorShop.csproj
-```
-
-При съществуващ магазин първо потвърди, че очакваните предишни миграции са приложени и схемата съответства. Новата миграция `CustomerAccountsAndOrderWorkflow` добавя профили, връзка между клиент и поръчка, статус и ключ за защита от дублиране. Провери SQL преди прилагане:
-
-Имай предвид, че `InitialCreate` създава таблиците за поръчки, но използва вече съществуващата таблица `Products` за външния ключ. Миграцията `IdentityAndDataConstraints` добавя Identity и намалява максималните дължини и прецизността на някои колони. Преди прилагането ѝ провери старите стойности за съвместимост. Не приемай, че цялата верига може да създаде празна база от нулата или че липсващата история означава празна база.
-
-```powershell
-dotnet ef migrations script --project .\OutdoorShop\OutdoorShop.csproj --startup-project .\OutdoorShop\OutdoorShop.csproj
-```
-
-След архивиране и потвърждение, че схемата е съвместима, администраторът може да приложи миграцията ръчно:
-
-```powershell
 dotnet ef database update --project .\OutdoorShop\OutdoorShop.csproj --startup-project .\OutdoorShop\OutdoorShop.csproj
 ```
 
-Включената фабрика за design-time контекст позволява на EF CLI да генерира миграции, без да стартира приложението и неговото начално зареждане на данни.
+The checked-in migration chain starts from the application's earlier catalog schema: `Products` and `Categories` must already exist before the `InitialCreate` migration, which creates order tables. Later migrations add Identity and customer/order workflow tables and constraints. A completely empty database therefore needs those baseline catalog tables created first. For an existing store, verify its schema and applied migration history before running an update; do not treat a missing migration history as proof that the database is empty.
 
-## Администраторски акаунт
+## Configure an administrator
 
-Настрой имейл и силна парола локално преди стартиране. Не ги записвай в конфигурационни файлове, commit или логове.
+Set the initial administrator account locally before starting the app. Keep these values out of source files and commits:
 
 ```powershell
 $env:AdminSeed__Email = "admin@example.com"
-$env:AdminSeed__Password = "Change-This-Strong-Password"
+$env:AdminSeed__Password = "Use-A-Strong-Local-Password"
+```
+
+At startup, the application creates missing `Admin` and `Customer` roles. The configured administrator is created only when both settings are provided. Public registration creates customer accounts only.
+
+## Run the application
+
+```powershell
 dotnet run --project .\OutdoorShop\OutdoorShop.csproj
 ```
 
-При старт се създават липсващите роли и се добавят липсващи примерни категории/продукти. Каталогът се зарежда добавъчно; съществуващите продукти, категории и поръчки не се презаписват. Администраторът се конфигурира само чрез тези настройки.
+The development launch profile serves HTTP at `http://localhost:5249` and HTTPS at `https://localhost:7286`. A compatible database schema and a local connection string must be configured before startup.
 
-## Стартиране
-
-От корена на хранилището:
+## Run tests
 
 ```powershell
-dotnet restore .\OutdoorShop.sln
-dotnet build .\OutdoorShop.sln
-dotnet run --project .\OutdoorShop\OutdoorShop.csproj
+dotnet test .\OutdoorShop.sln
 ```
 
-Локалните адреси са `http://localhost:5249` и `https://localhost:7286` според профила в `launchSettings.json`. Необходима е подготвена база със съвместима схема преди стартиране, понеже началното зареждане използва базата.
+## Screenshots
 
-## Основни адреси
+Screenshots are not included yet. Add captures under `docs/screenshots/` and link them in this section when available.
 
-- `/` — начало
-- `/Products` — каталог, търсене и филтри
-- `/Products/Details/{id}` — продукт
-- `/Categories` — категории
-- `/Cart` — количка
-- `/Order/Checkout` — поръчка
-- `/Account/Register`, `/Account/Login`, `/Account/Profile` — регистрация, вход и профил
-- `/Account/MyOrders` — поръчки на влезлия клиент
-- `/Admin` — административно табло
-- `/Orders` — администраторски списък и детайли на поръчки
+## Image credits
 
-## Проверки
-
-```powershell
-dotnet restore .\OutdoorShop.sln
-dotnet build .\OutdoorShop.sln --no-restore
-```
-
-Автоматизирани integration тестове с MariaDB не са включени. Потокът за реална база (регистрация, checkout и администраторски операции) трябва да се провери след локална настройка на XAMPP и ръчно прилагане на миграцията.
-
-## Снимки и лицензи
-
-Снимките за каталога и началната страница се съхраняват в `OutdoorShop/wwwroot/images`. Те са илюстративни и не представят непременно точен модел или марка. При липсващ файл се показва локалното изображение `product-placeholder.svg`.
-
-Фотографиите са свалени от Pexels и се използват съгласно [Pexels License](https://www.pexels.com/license/). Автори и източници:
+Product and storefront images are illustrative and are used under the [Pexels License](https://www.pexels.com/license/). The images are stored locally under `OutdoorShop/wwwroot/images`; several related products share a category image.
 
 - [Lukas Seitz — mountain tents](https://www.pexels.com/photo/tents-on-camping-in-mountains-17079655/) (hero and tent photos)
 - [Sidde — tent in a mountain field](https://www.pexels.com/photo/a-camping-tent-on-grass-field-under-the-blue-sky-8220281/) (shelter)
 - [Ioan-Dan Plesa — backpack on grass](https://www.pexels.com/photo/backpack-on-grass-14718806/) (backpack)
-- [kwnos Iv — hiker carrying backpack and sleeping bag](https://www.pexels.com/photo/hiker-with-backpack-and-sleeping-bag-15782410/) (sleep system)
+- [kwnos Iv — hiker with backpack and sleeping bag](https://www.pexels.com/photo/hiker-with-backpack-and-sleeping-bag-15782410/) (sleep system)
 - [Buğra Özcan — lantern by a tent](https://www.pexels.com/photo/lamp-on-tent-on-camping-22669473/) (camp lighting)
-- [Marek Piwnicki — headlamp on a night hike](https://www.pexels.com/photo/mysterious-nighttime-hike-with-headlamp-light-29176030/) (headlamp)
-- [Simon Migaj — hiker with headlamp](https://www.pexels.com/photo/a-person-wearing-a-lighted-headlamp-standing-outdoors-762420/) (headlamp)
+- [Marek Piwnicki — headlamp on a night hike](https://www.pexels.com/photo/mysterious-nighttime-hike-with-headlamp-light-29176030/) and [Simon Migaj — hiker wearing a headlamp](https://www.pexels.com/photo/a-person-wearing-a-lighted-headlamp-standing-outdoors-762420/) (headlamps)
 - [Gabriel Felix — rainy hike](https://www.pexels.com/photo/woman-in-gray-jacket-walking-on-mountain-area-4273239/) (outerwear)
 - [NHP&Co — hiker wearing a cap](https://www.pexels.com/photo/stubbled-man-with-black-cap-and-sports-sunglasses-17671556/) (cap)
-- [Vincent M.A. Janssen — hiking boots](https://www.pexels.com/photo/hiking-boots-in-close-up-4923342/) (footwear)
+- [Vincent M.A. Janssen — hiking boots](https://www.pexels.com/photo/hiking-boots-in-close-up-4923342/) and [Никита Шелайкин — boots at a mountain tent](https://www.pexels.com/photo/shoes-in-front-of-a-tent-in-a-mountain-valley-20890180/) (footwear)
 - [Omid Jannati — hikers with boots and gaiters](https://www.pexels.com/photo/legs-of-people-in-outdoor-clothing-and-shoes-17844768/) (gaiters)
 - [Vintage Laka — hiker with trekking pole](https://www.pexels.com/photo/man-hiking-in-rocky-mountain-terrain-outdoors-34733420/) (trekking equipment)
 - [Maël Balland — cooking outdoors](https://www.pexels.com/photo/frying-pan-on-bonfire-10807704/) (cookware)
 - [Osman SRAN — pocket knife and field notebook](https://www.pexels.com/photo/pocket-knife-and-lighter-on-field-notebook-22798297/) (outdoor tool)
-- [Osman SRAN — gloves and wooden cup in a forest](https://www.pexels.com/photo/pair-of-yellow-protective-gloves-and-a-wooden-cup-on-a-log-in-the-forest-23956824/) (outdoor gloves)
+- [Osman SRAN — gloves and wooden cup in a forest](https://www.pexels.com/photo/pair-of-yellow-protective-gloves-and-a-wooden-cup-on-a-log-in-the-forest-23956824/) (gloves)
 - [Alexander Mass — hiking gear](https://www.pexels.com/photo/outdoor-hiking-gear-with-backpacks-and-notes-38881957/) (outdoor accessories)
 - [Rohan Sudan — mountain camping at night](https://www.pexels.com/photo/brown-ten-under-starry-sky-12058916/) (camp shelter)
 - [Sidde — backpack and camping mat](https://www.pexels.com/photo/big-backpack-with-mat-on-a-grass-field-8220243/) (day pack)
 - [Ali Kazal — backpack beside a tent](https://www.pexels.com/photo/a-backpack-near-the-tent-10762614/) (dry bag)
 - [Andrea Román — mountain hiker](https://www.pexels.com/photo/man-in-jacket-hiking-15475227/) (fleece)
-- [Никита Шелайкин — boots at a mountain tent](https://www.pexels.com/photo/shoes-in-front-of-a-tent-in-a-mountain-valley-20890180/) (hiking shoes)
 - [Guohua Song — mountain camp with chair and lantern](https://www.pexels.com/photo/tranquil-mountain-camping-at-sunset-37438097/) (camp furniture)
 - [Uriel Mont — portable table and camp cookware](https://www.pexels.com/photo/portable-table-with-vacuum-flasks-on-coast-6271623/) (camp table)
 - [Mykhailo Petrushchak — tent interior with sleeping mat and cookware](https://www.pexels.com/photo/cozy-camping-tent-setup-with-cookware-31443014/) (sleeping comfort and cooking)
 - [Karson — sleeping bag](https://www.pexels.com/photo/woman-lying-in-a-sleeping-bag-in-snow-6299741/) (sleeping bag)
-- [Marina Andreeva — bottle on mountain rocks](https://www.pexels.com/photo/flask-on-rock-in-mountains-25382222/) (hydration)
-- [Ninety Seven Years — bottle outdoors](https://www.pexels.com/photo/white-water-bottle-on-wooden-bench-outdoors-34140877/) (water container)
+- [Marina Andreeva — bottle on mountain rocks](https://www.pexels.com/photo/flask-on-rock-in-mountains-25382222/) and [Ninety Seven Years — bottle outdoors](https://www.pexels.com/photo/white-water-bottle-on-wooden-bench-outdoors-34140877/) (hydration)
 - [neslihan — folding camping chair](https://www.pexels.com/photo/green-folding-camping-chair-in-outdoor-setting-35223580/) (camp chair)
 - [Alex Moliski — backpacks in forest](https://www.pexels.com/photo/backpacks-resting-against-tree-in-forest-setting-32290434/) (pack cover)
-
-Изображенията са запазени локално с максимална ширина 1200 пиксела. Няколко сходни продукта използват обща снимка за съответната категория.
