@@ -4,7 +4,6 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>d1367fbc-b3d8-4ba8-874a-f05913a04527</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +17,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Retained as source history only; the application now uses SQLite migrations. -->
+    <Compile Remove="Migrations\LegacyMySql\**\*.cs" />
   </ItemGroup>
 
 </Project>

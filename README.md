@@ -1,6 +1,6 @@
 # OutdoorShop
 
-OutdoorShop is an ASP.NET Core MVC storefront for camping and hiking equipment. It includes a Bulgarian-language, responsive shopping experience backed by MariaDB, with customer accounts, order management, and an admin area.
+OutdoorShop е уеб магазин на ASP.NET Core MVC за туристическа и къмпинг екипировка. Проектът използва SQLite и създава базата автоматично при първо стартиране.
 
 ## Features
 
@@ -14,76 +14,38 @@ OutdoorShop is an ASP.NET Core MVC storefront for camping and hiking equipment. 
 
 ## Technologies
 
-- C# and .NET 9 / ASP.NET Core MVC
-- Entity Framework Core 9 and EF Core migrations
-- MariaDB or MySQL through Pomelo.EntityFrameworkCore.MySql
-- ASP.NET Core Identity
-- Razor Views, Bootstrap, CSS, and JavaScript
-- xUnit tests
+- C#, .NET 9 и ASP.NET Core MVC
+- Entity Framework Core 9 и SQLite
+- ASP.NET Core Identity за регистрация, вход и роли
+- Razor Views, Bootstrap, CSS и JavaScript
+- xUnit тестове
 
-## Requirements
+## Стартиране с Visual Studio
 
-- .NET 9 SDK
-- MariaDB 10.4 or a compatible MySQL/MariaDB server
-- Git
-- Internet access for the initial NuGet package restore
+1. Инсталирай Visual Studio 2022 версия 17.12 или по-нова с работното натоварване **ASP.NET and web development** и .NET 9 SDK.
+2. Изтегли ZIP архива на проекта от GitHub и го разархивирай.
+3. Отвори `OutdoorShop.sln` във Visual Studio.
+4. Изчакай възстановяването на NuGet пакетите.
+5. Натисни **F5**.
 
-## Installation
+Не са нужни XAMPP, MySQL, MariaDB, Docker, User Secrets или променливи на средата. При първото стартиране приложението създава `OutdoorShop/App_Data/outdoorshop.db`, прилага SQLite миграциите и добавя примерните категории и продукти. Следващите стартирания използват същия файл. Обикновеното изграждане на проекта не го изтрива. Не изтривай файла, ако искаш да запазиш локалните поръчки и профили.
 
-Clone the repository, restore packages, and build the solution:
+Приложението включва регистрация и вход на клиенти, разглеждане на продукти и категории, количка и поръчки. Ролите `Admin` и `Customer` се създават автоматично. За защита на администраторските страници е необходим потребител с роля `Admin`; не е зададена обща парола в проекта. По желание администратор може да бъде зададен чрез `AdminSeed:Email` и `AdminSeed:Password` във Visual Studio Debug environment variables. Паролата не трябва да се записва в GitHub.
+
+## База данни и запазване на старите данни
+
+SQLite базата е отделна от старата MySQL/MariaDB база. Приложението не се свързва с нея и не променя нейни файлове. Миграциите създават структурата за SQLite; те не пренасят записите от старата база.
+
+Ако трябва да се запазят старите 30 продукта, 14 категории, 4 поръчки и потребителите, нужни са еднократен експорт от работещо копие/възстановен SQL архив и импортер към вече създадената SQLite схема. Експортът трябва да включва `Categories`, `Products`, `Orders`, `OrderItems`, `CustomerProfiles` и Identity таблиците (`AspNetUsers`, `AspNetRoles`, `AspNetUserRoles`, `AspNetUserClaims`, `AspNetRoleClaims`, `AspNetUserLogins`, `AspNetUserTokens`). Импортерът трябва да запази ID стойностите, паролни хешове и връзките между тези записи; примерният каталог трябва да се съпостави по ID/име, за да се избегнат дублирания. В този репозиторий няма SQL архив или автоматичен конвертор, затова тези записи не могат да се пренесат само от GitHub ZIP. Старата база остава непроменена.
+
+При празна SQLite база се добавят примерни данни от `IdentitySeedData`. Това са демонстрационни записи, а не копие на старите 30 продукта или поръчки.
+
+## Стартиране от терминал
 
 ```powershell
-git clone https://github.com/Darinchos/OutdoorShop.git
-cd OutdoorShop
 dotnet restore .\OutdoorShop.sln
-dotnet build .\OutdoorShop.sln
-```
-
-## Database setup
-
-Create a local MariaDB database, for example:
-
-```sql
-CREATE DATABASE outdoorshop CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-```
-
-Keep the connection string in ASP.NET Core User Secrets. The project already has a `UserSecretsId`, so there is no need to run `dotnet user-secrets init`:
-
-```powershell
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "server=127.0.0.1;port=3306;database=outdoorshop;user=root;password=YOUR_LOCAL_PASSWORD" --project .\OutdoorShop\OutdoorShop.csproj
-```
-
-Use your local MariaDB username and password. Do not commit credentials, User Secrets, database files, or SQL exports. For local deployments, environment variables such as `ConnectionStrings__DefaultConnection` can also provide configuration.
-
-### Schema and migrations
-
-The application does not apply migrations automatically. Review the current migration history and schema before updating an existing database:
-
-```powershell
-dotnet ef migrations list --project .\OutdoorShop\OutdoorShop.csproj --startup-project .\OutdoorShop\OutdoorShop.csproj
-dotnet ef database update --project .\OutdoorShop\OutdoorShop.csproj --startup-project .\OutdoorShop\OutdoorShop.csproj
-```
-
-The checked-in migration chain starts from the application's earlier catalog schema: `Products` and `Categories` must already exist before the `InitialCreate` migration, which creates order tables. Later migrations add Identity and customer/order workflow tables and constraints. A completely empty database therefore needs those baseline catalog tables created first. For an existing store, verify its schema and applied migration history before running an update; do not treat a missing migration history as proof that the database is empty.
-
-## Configure an administrator
-
-Set the initial administrator account locally before starting the app. Keep these values out of source files and commits:
-
-```powershell
-$env:AdminSeed__Email = "admin@example.com"
-$env:AdminSeed__Password = "Use-A-Strong-Local-Password"
-```
-
-At startup, the application creates missing `Admin` and `Customer` roles. The configured administrator is created only when both settings are provided. Public registration creates customer accounts only.
-
-## Run the application
-
-```powershell
 dotnet run --project .\OutdoorShop\OutdoorShop.csproj
 ```
-
-The development launch profile serves HTTP at `http://localhost:5249` and HTTPS at `https://localhost:7286`. A compatible database schema and a local connection string must be configured before startup.
 
 ## Run tests
 

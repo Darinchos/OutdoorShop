@@ -24,9 +24,9 @@ public class AdminController : Controller
                 select userRole.UserId).Distinct().CountAsync(),
             OrderCount = await _context.Orders.CountAsync(),
             PendingOrderCount = await _context.Orders.CountAsync(order => order.Status == Models.OrderStatuses.Pending),
-            MonthlyRevenue = await _context.Orders.Where(order => order.CreatedAt >= monthStart &&
+            MonthlyRevenue = (await _context.Orders.Where(order => order.CreatedAt >= monthStart &&
                     order.Status != Models.OrderStatuses.Cancelled)
-                .Select(order => (decimal?)order.TotalPrice).SumAsync() ?? 0,
+                .Select(order => order.TotalPrice).ToListAsync()).Sum(),
             RecentOrders = await _context.Orders.OrderByDescending(order => order.CreatedAt).Take(6).ToListAsync()
         };
         return View(model);

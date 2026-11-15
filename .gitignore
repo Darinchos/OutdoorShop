@@ -391,6 +391,7 @@ aria_log*
 **/mariadb-data/
 **/database-backups/
 **/db-backups/
+**/App_Data/
 
 # Local configuration and secrets
 **/appsettings.*.json

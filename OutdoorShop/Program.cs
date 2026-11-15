@@ -1,14 +1,33 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using OutdoorShop.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var databaseDirectory = Path.Combine(builder.Environment.ContentRootPath, "App_Data");
+Directory.CreateDirectory(databaseDirectory);
+var defaultDatabasePath = Path.Combine(databaseDirectory, "outdoorshop.db");
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' was not found.");
+    ?? $"Data Source={defaultDatabasePath}";
+
+var isRailway = !string.IsNullOrWhiteSpace(builder.Configuration["RAILWAY_ENVIRONMENT_ID"]);
+if (isRailway)
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        // Railway does not publish stable ingress proxy IP ranges. Trust only its
+        // single forwarded scheme value, and treat this Railway environment as
+        // the trust boundary. Keep untrusted services and TCP proxies out of it.
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
+        options.ForwardLimit = 1;
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
+    });
+}
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(connectionString, new MariaDbServerVersion(new Version(10, 4, 32))));
+    options.UseSqlite(connectionString));
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     {
@@ -22,6 +41,12 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+var secureCookiePolicy = builder.Environment.IsProduction()
+    ? CookieSecurePolicy.Always
+    : CookieSecurePolicy.SameAsRequest;
+builder.Services.ConfigureApplicationCookie(options =>
+    options.Cookie.SecurePolicy = secureCookiePolicy);
+
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -29,12 +54,21 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = secureCookiePolicy;
 });
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-await IdentitySeedData.InitializeAsync(app.Services, app.Configuration);
+if (isRailway)
+    app.UseForwardedHeaders();
+
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await context.Database.MigrateAsync();
+    await IdentitySeedData.InitializeAsync(app.Services, app.Configuration);
+}
 
 if (!app.Environment.IsDevelopment())
 {
@@ -53,5 +87,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapGet("/healthz", () => Results.Ok(new { status = "ok" }));
 
 app.Run();

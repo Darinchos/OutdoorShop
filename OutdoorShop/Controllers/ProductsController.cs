@@ -30,8 +30,6 @@ namespace OutdoorShop.Controllers
 
             query = sort switch
             {
-                "price_asc" => query.OrderBy(product => product.Price).ThenBy(product => product.Name),
-                "price_desc" => query.OrderByDescending(product => product.Price).ThenBy(product => product.Name),
                 "name_desc" => query.OrderByDescending(product => product.Name),
                 "stock" => query.OrderByDescending(product => product.Stock).ThenBy(product => product.Name),
                 _ => query.OrderBy(product => product.Name)
@@ -45,6 +43,15 @@ namespace OutdoorShop.Controllers
             var products = await query
                 .Include(p => p.Category)
                 .ToListAsync();
+
+            // SQLite cannot translate ORDER BY for decimal columns. Sort the
+            // already-filtered catalog in memory for the price options.
+            products = sort switch
+            {
+                "price_asc" => products.OrderBy(product => product.Price).ThenBy(product => product.Name).ToList(),
+                "price_desc" => products.OrderByDescending(product => product.Price).ThenBy(product => product.Name).ToList(),
+                _ => products
+            };
 
             return View(products);
         }
